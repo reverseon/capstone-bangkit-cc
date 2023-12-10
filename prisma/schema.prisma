@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  url      String @unique
+  title    String @db.VarChar(2048)
+  thumbnail String? @db.VarChar(2048)
+  publisherLogo String @db.VarChar(2048)
+  publisherName String @db.VarChar(2048)
+  publishedAt DateTime
+  scrapedAt DateTime @default(now())
+  excerpt String @db.VarChar(4096)
+  forHeadlineCover Headline? @relation(name: "CoverNews", fields: [headlineCoverId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  forHeadlineNews Headline? @relation(name: "CompleteNews", fields: [headlineNewsId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  headlineCoverId Int? @unique
+  headlineNewsId Int?
+}
+
+model Headline {
+  id       Int      @id @default(autoincrement())
+  referrer String @unique // https://news.google.com/stories/{referrer}
+  coverNews News? @relation(name: "CoverNews")
+  news News[] @relation(name: "CompleteNews")
+}
+
+enum GlobalState {
+  LAST_SCRAPED
+}
+
+model State {
+  id Int @id @default(autoincrement())
+  key GlobalState @unique
+  value DateTime
+}
