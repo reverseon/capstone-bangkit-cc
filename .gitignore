@@ -1,0 +1,4 @@
+test_bed/
+dist/
+node_modules/
+.env
