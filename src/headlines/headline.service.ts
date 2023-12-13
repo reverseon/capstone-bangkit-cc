@@ -1,4 +1,5 @@
 import { GlobalState, PrismaClient } from "@prisma/client";
+import { Prisma } from "../prisma/prisma";
 
 enum HeadlineErrorType {
     NOT_FOUND = 'NOT_FOUND',
@@ -25,7 +26,7 @@ class HeadlineService {
             title?: string,
         },
     ) {
-        const prisma = new PrismaClient();
+        const prisma = Prisma.getInstance();
         if (
             contains?.title && equal?.title
         ) {
@@ -89,7 +90,7 @@ class HeadlineService {
     }
 
     static async getNewsFromReferrer(referrer: string) {
-        const prisma = new PrismaClient();
+        const prisma = Prisma.getInstance();
         try {
             await prisma.$connect();
             const headline = await prisma.headline.findUnique({
