@@ -256,6 +256,7 @@ async function crawlContent(browser: Browser,
                     !liputan.content.excerpt
                 ) {
                     console.log("Missing field");
+                    headline.completeNews = headline.completeNews.filter((news) => news.url !== liputan.url);
                     continue;
                 }
                 await writer.news.create({
