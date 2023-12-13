@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `News` MODIFY `url` VARCHAR(2048) NOT NULL;

@@ -12,7 +12,7 @@ datasource db {
 
 model News {
   id        Int      @id @default(autoincrement())
-  url      String @unique
+  url      String @unique @db.VarChar(2048)
   title    String @db.VarChar(2048)
   thumbnail String? @db.VarChar(2048)
   publisherLogo String @db.VarChar(2048)
