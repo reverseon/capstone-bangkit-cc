@@ -18,7 +18,8 @@ class HeadlineService {
     }
 
     static async getHeadlines(
-        limit?: number, 
+        limit: number = 10,
+        page: number = 1,
         contains?: {
             title?: string,
         },
@@ -44,7 +45,11 @@ class HeadlineService {
                         )
                     },
                 },
+                skip: (page - 1) * (limit),
                 take: limit,
+                orderBy: {
+                    id: 'desc',
+                },
             });
             const returnedHeadlines = await Promise.all(filteredHeadlines.map(async (headline) => {
                 return {

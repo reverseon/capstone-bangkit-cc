@@ -7,6 +7,7 @@ headlineController.get("/", async (
     req, res) => 
 {
     let limit: number | undefined;
+    let page: number | undefined;
     let titleContains: string | undefined;
     let titleEquals: string | undefined;
     try {
@@ -18,6 +19,15 @@ headlineController.get("/", async (
                 throw new Error("Limit must be a number");
             }
         } 
+
+        if (
+            req.query.page
+        ) {
+            page = Number(req.query.page);
+            if (isNaN(page)) {
+                throw new Error("Page must be a number");
+            }
+        }
 
         if (
             req.query.titleContains
@@ -35,15 +45,25 @@ headlineController.get("/", async (
         return;
     }
     try {
-        res.json(await HeadlineService.getHeadlines(
+        const headlines = await HeadlineService.getHeadlines(
             limit,
+            page,
             {
                 title: titleContains,
             },
             {
                 title: titleEquals,
             },
-        ));
+        );
+        if (
+            headlines.headlines.length > 0
+        ) {
+            res.json(headlines);
+        } else {
+            res.status(204).send(
+                "No headlines found",
+            );
+        }
     } catch (error) {
         res.status(500).send((error as Error).message);
     }
