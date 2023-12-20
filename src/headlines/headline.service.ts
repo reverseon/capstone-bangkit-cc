@@ -51,25 +51,40 @@ class HeadlineService {
                     id: 'desc',
                 },
             });
-            const returnedHeadlines = await Promise.all(filteredHeadlines.map(async (headline) => {
-                return {
-                    referrer: headline.referrer,
-                    headline: await prisma.news.findUnique({
-                        where: {
-                            headlineCoverId: headline.id,
-                        },
-                        select: {
-                            title: true,
-                            url: true,
-                            publishedAt: true,
-                            publisherName: true,
-                            publisherLogo: true,
-                            thumbnail: true,
-                            excerpt: true,
-                        },
-                    }),
-                }
-            }));
+            const returnedHeadlines = 
+                await Promise.all(filteredHeadlines.map(
+                    async (headline) => {
+                    return {
+                        referrer: headline.referrer,
+                        headline: await prisma.news.findUnique({
+                            where: {
+                                headlineCoverId: headline.id,
+                            },
+                            select: {
+                                title: true,
+                                url: true,
+                                publishedAt: true,
+                                publisherName: true,
+                                publisherLogo: true,
+                                thumbnail: true,
+                                excerpt: true,
+                            },
+                        }),
+                        aggregateMetrics: await prisma.news.aggregate({
+                            where: {
+                                headlineNewsId: headline.id,
+                            },
+                            _avg: {
+                                bias: true,
+                                left_tendency: true,
+                                right_tendency: true,
+                                center_tendency: true,
+                                subjectivity: true,
+                            },
+                        }),
+                    }
+                })
+            );
             return {
                 lastUpdated: (await prisma.state.findUnique({
                     where: {
@@ -120,6 +135,18 @@ class HeadlineService {
                         value: true,
                     },
                 }))?.value,
+                aggregateMetrics: await prisma.news.aggregate({
+                    where: {
+                        headlineNewsId: headline.id,
+                    },
+                    _avg: {
+                        bias: true,
+                        left_tendency: true,
+                        right_tendency: true,
+                        center_tendency: true,
+                        subjectivity: true,
+                    },
+                }),
                 news: await prisma.news.findMany({
                 where: {
                     headlineNewsId: headline.id,
@@ -132,6 +159,11 @@ class HeadlineService {
                     publisherLogo: true,
                     thumbnail: true,
                     excerpt: true,
+                    bias: true,
+                    left_tendency: true,
+                    right_tendency: true,
+                    center_tendency: true,
+                    subjectivity: true,
                 },
             })};
         } catch (error) {

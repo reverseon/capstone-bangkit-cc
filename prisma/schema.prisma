@@ -20,6 +20,11 @@ model News {
   publishedAt DateTime
   scrapedAt DateTime @default(now())
   excerpt String @db.VarChar(4096)
+  bias Float
+  subjectivity Float
+  center_tendency Float
+  left_tendency Float
+  right_tendency Float
   forHeadlineCover Headline? @relation(name: "CoverNews", fields: [headlineCoverId], references: [id], onDelete: NoAction, onUpdate: Cascade)
   forHeadlineNews Headline? @relation(name: "CompleteNews", fields: [headlineNewsId], references: [id], onDelete: NoAction, onUpdate: Cascade)
   headlineCoverId Int? @unique

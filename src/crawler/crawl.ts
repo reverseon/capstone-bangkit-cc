@@ -13,6 +13,7 @@ import { title } from "process";
 
 interface Content {
     excerpt: string | null,
+    text: string | null,
 }
 interface News {
     title: string | null,
@@ -162,6 +163,7 @@ async function crawlLiputanLengkap(browser: Browser,
                     url: realurl ?? null,
                     content: {
                         excerpt: null,
+                        text: null,
                     }
                 });
             }
@@ -229,6 +231,7 @@ async function crawlContent(browser: Browser,
                 const article = reader.parse();
                 liputan.content = {
                     excerpt: article?.excerpt ?? null,
+                    text: article?.textContent ?? null,
                 };
             }
             // write all news
@@ -259,6 +262,15 @@ async function crawlContent(browser: Browser,
                     headline.completeNews = headline.completeNews.filter((news) => news.url !== liputan.url);
                     continue;
                 }
+                const metrics = await fetch('http://35.208.123.190:3001/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: liputan.content.text,
+                    })
+                }).then((res) => res.json());
                 await writer.news.create({
                     data: {
                         title: liputan.title,
@@ -269,6 +281,11 @@ async function crawlContent(browser: Browser,
                         url: liputan.url,
                         excerpt: liputan.content.excerpt,
                         headlineNewsId: isHeadlineInDB?.id ?? undefined,
+                        subjectivity: metrics.value.subjectivity,
+                        bias: metrics.value.bias,
+                        center_tendency: metrics.value.center_tendency,
+                        left_tendency: metrics.value.left_tendency,
+                        right_tendency: metrics.value.right_tendency,
                     }
                 });
             }
@@ -319,7 +336,7 @@ async function crawlContent(browser: Browser,
 async function main() {
 
     const prisma = new PrismaClient();
-    const qty = 20; 
+    const qty = 10; 
     console.time("Time"); 
     const browser = await puppeteer.launch({
         headless: true,
